@@ -69,41 +69,8 @@ export function Hero() {
 
         <h1 className="font-bold mb-6 leading-tight">
           {/* Ilusión - MÁS GRANDE en verde lima */}
-          <span className="block font-logo text-6xl sm:text-7xl md:text-8xl lg:text-9xl animate-fade-in relative" style={{ color: '#a3d977' }}>
-            Ilus
-            {/* La i sin punto + foquito de corazón */}
-            <span className="relative inline-block">
-              <span style={{ fontFamily: 'Pacifico', fontSize: 'inherit' }}>ı</span>{/* i sin punto */}
-              {/* Foquito de corazón flotante en el punto de la i */}
-              <span className="absolute -top-2 sm:-top-3 md:-top-4 lg:-top-5 left-1/2 -translate-x-1/2 animate-float" style={{ marginLeft: '-0.5cm' }}>
-                <svg 
-                  width="32" 
-                  height="40" 
-                  viewBox="0 0 24 32" 
-                  fill="none" 
-                  className="drop-shadow-lg sm:w-[40px] sm:h-[50px] md:w-[48px] md:h-[60px] lg:w-[56px] lg:h-[70px]"
-                >
-                  {/* Corazón morado/lila */}
-                  <path 
-                    d="M18.84 4.61a4.5 4.5 0 0 0-6.36 0L12 5.09l-.48-.48a4.5 4.5 0 0 0-6.36 6.36l.48.48L12 17.81l6.36-6.36.48-.48a4.5 4.5 0 0 0 0-6.36z" 
-                    fill="#9b6bb5"
-                    stroke="#8b5ba5"
-                    strokeWidth="3"
-                  />
-                  {/* Corazón interno (blanco) */}
-                  <path 
-                    d="M12 7c-1-1-2.5-1-3.5 0-.8.8-.8 2 0 2.8L12 13l3.5-3.2c.8-.8.8-2 0-2.8-1-1-2.5-1-3.5 0z" 
-                    fill="white"
-                  />
-                  {/* Base del foquito (verde lima) - MÁS PEGADA AL CORAZÓN */}
-                 
-                  <line x1="8" y1="21" x2="16" y2="21" stroke="#a3d977" strokeWidth="2.5" strokeLinecap="round" />
-                  <line x1="9" y1="23" x2="15" y2="23" stroke="#a3d977" strokeWidth="2" strokeLinecap="round" />
-                  <line x1="11" y1="25" x2="13" y2="25" stroke="#a3d977" strokeWidth="2" strokeLinecap="round" />
-                </svg>
-              </span>
-            </span>
-            ón
+          <span className="font-logo text-8xl sm:text-9xl md:text-[9rem] lg:text-[10rem] xl:text-[12rem] animate-fade-in relative" style={{ color: '#1ab5b5' }}>
+            Ilusión
           </span>
           
           {/* CREATIVA - más chica en morado */}
