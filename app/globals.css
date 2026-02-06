@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Montserrat+Alternates:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Pacifico&family=Montserrat:wght@500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -22,5 +23,16 @@
   .card-shadow-hover {
     box-shadow: 0 10px 15px -3px rgba(26, 181, 181, 0.2), 
                 0 4px 6px -2px rgba(26, 181, 181, 0.1);
+  }
+  
+  /* Estilos para el logo tipo script */
+  .font-logo {
+    font-family: 'Pacifico', cursive;
+  }
+  
+  .font-creativa {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.1em;
   }
 }

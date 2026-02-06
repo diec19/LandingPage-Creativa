@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { MessageCircle, Menu, X,Wand2} from 'lucide-react';
 import { WhatsAppButton } from './WhatsAppButton';
+import Image from 'next/image';
 
 /**
  * Componente Navbar - Barra de navegación superior
@@ -43,9 +44,15 @@ export function Navbar() {
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <a href="#" className="flex items-center gap-2 group">
-            <div className="bg-gradient-to-br from-turquoise-400 to-turquoise-600 p-2 rounded-xl group-hover:scale-110 transition-transform duration-300">
-              <Wand2 className="w-6 h-6 text-white" />
-            </div>
+           
+              <Image
+                src="/logo.png"
+                alt="Ilusión Creativa"
+                width={90}
+                height={90}
+               
+              />
+
             <div className="hidden sm:block">
               <span className="text-xl font-bold bg-gradient-to-r from-turquoise-600 to-soft-pink-500 bg-clip-text text-transparent">
                 Ilusión Creativa
