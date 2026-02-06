@@ -14,7 +14,7 @@ export function Hero() {
   const whatsappMessage = encodeURIComponent('¡Hola! Me gustaría consultar sobre artículos escolares 📚');
    
   // Efecto de typing automático
-  const words = ['Arte', 'Juguetería', 'Personalizados', 'Escolar'];
+  const words = ['Juguetería', 'Personalizados', 'Escolar'];
   const [text, setText] = useState('');
   const [wordIndex, setWordIndex] = useState(0);
   const [charIndex, setCharIndex] = useState(0);
