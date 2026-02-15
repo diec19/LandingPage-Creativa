@@ -2,6 +2,7 @@ import { Navbar } from '@/components/Navbar';
 import { Hero } from '@/components/Hero';
 import { PhotoSlider } from '@/components/PhotoSlider';
 import { Services } from '@/components/Services';
+import { Catalog } from '@/components/Catalog';
 import { Gallery } from '@/components/Gallery';
 import { Contact } from '@/components/Contact';
 import { Footer } from '@/components/Footer';
@@ -24,6 +25,9 @@ export default function Home() {
 
       {/* Sección de Servicios */}
       <Services />
+
+      {/* Catálogo de Productos */}
+      <Catalog />
 
       {/* Galería de Trabajos */}
       <Gallery />

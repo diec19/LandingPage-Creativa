@@ -1,10 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { MessageCircle, Menu, X,Wand2} from 'lucide-react';
+import { MessageCircle, Menu, X, Sparkles } from 'lucide-react';
 import { WhatsAppButton } from './WhatsAppButton';
 import Image from 'next/image';
-
 /**
  * Componente Navbar - Barra de navegación superior
  * Incluye logo, links de navegación y botón de WhatsApp
@@ -28,6 +27,7 @@ export function Navbar() {
 
   const navLinks = [
     { href: '#servicios', label: 'Servicios' },
+    { href: '#catalogo', label: 'Catálogo' },
     { href: '#galeria', label: 'Galería' },
     { href: '#contacto', label: 'Contacto' },
   ];

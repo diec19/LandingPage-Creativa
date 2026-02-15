@@ -52,19 +52,28 @@ module.exports = {
           300: '#f9f3e7',
           400: '#f7efdf',
           500: '#f5ebd7', // Crema/beige de las etiquetas
+        },
+        // Colores del logo original
+        'logo-green': {
+          DEFAULT: '#a3d977', // Verde lima de "Ilusión"
+          light: '#b8e592',
+          dark: '#8ec45c',
+        },
+        'logo-purple': {
+          DEFAULT: '#9b6bb5', // Morado de "Creativa"
+          light: '#b085ca',
+          dark: '#8657a0',
         }
       },
       fontFamily: {
         sans: ['var(--font-geist-sans)', 'system-ui', 'sans-serif'],
         rounded: ['Quicksand', 'Poppins', 'Nunito', 'system-ui', 'sans-serif'],
-        heading: ['Poppins', 'sans-serif'],
-        logo: ['Montserrat Alternates', 'sans-serif'],
       },
       animation: {
         'fade-in': 'fadeIn 0.6s ease-in-out',
         'fade-in-up': 'fadeInUp 0.6s ease-out',
         'bounce-slow': 'bounce 3s infinite',
-        'float': 'float 3s ease-in-out infinite',
+        'float': 'float 2.5s ease-in-out infinite',
       },
       keyframes: {
         fadeIn: {
@@ -76,8 +85,8 @@ module.exports = {
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
         float: {
-          '0%, 100%': { transform: 'translateY(0px)' },
-          '50%': { transform: 'translateY(-10px)' },
+          '0%, 100%': { transform: 'translateY(0px) translateX(-50%)' },
+          '50%': { transform: 'translateY(-8px) translateX(-50%)' },
         }
       },
     },
