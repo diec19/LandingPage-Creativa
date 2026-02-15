@@ -53,8 +53,7 @@ function DashboardContent() {
 
       setStats({
         totalProducts: products.count || 0,
-        productsInStock: products.data?.filter((p) => p.stock).length || 0,
-        totalGalleryItems: gallery.count || 0,
+        productsInStock: (products.data || []).filter((p: any) => p.stock).length,        totalGalleryItems: gallery.count || 0,
         totalCategories: categories.count || 0,
       });
     } catch (error) {
