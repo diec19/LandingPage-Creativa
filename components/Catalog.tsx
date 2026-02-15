@@ -238,9 +238,8 @@ export function Catalog() {
                     className={`w-full font-semibold py-3 rounded-full hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2 group/btn ${
                       product.stock
                         ? 'bg-gradient-to-r from-logo-green to-logo-green-dark text-white'
-                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed pointer-events-none'
                     }`}
-                    disabled={!product.stock}
                   >
                     <MessageCircle className="w-4 h-4 group-hover/btn:animate-bounce" />
                     {product.stock ? 'Consultar por WhatsApp' : 'Sin Stock'}
