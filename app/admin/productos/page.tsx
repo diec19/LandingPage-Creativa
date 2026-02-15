@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { Product } from '@/lib/supabase';
 import { ProtectedRoute } from '@/components/admin/ProtectedRoute';
+import { ImportExcelModal } from '@/components/admin/ImportExcelModal';
 import {
   Package,
   Plus,
@@ -18,12 +19,13 @@ import {
   Tag,
   FileText,
   Image as ImageIcon,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 /**
  * Página de Gestión de Productos
- * CRUD completo con subida de imágenes
+ * CRUD completo con subida de imágenes e importación masiva desde Excel
  */
 function ProductosContent() {
   const router = useRouter();
@@ -33,6 +35,7 @@ function ProductosContent() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('Todos');
   const [showModal, setShowModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [uploading, setUploading] = useState(false);
 
@@ -240,13 +243,22 @@ function ProductosContent() {
               </div>
             </div>
 
-            <button
-              onClick={openNewProductModal}
-              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-logo-purple to-logo-purple-dark text-white rounded-xl font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
-            >
-              <Plus className="w-5 h-5" />
-              Nuevo Producto
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowImportModal(true)}
+                className="flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-logo-green to-logo-green-dark text-white rounded-xl font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+              >
+                <FileSpreadsheet className="w-5 h-5" />
+                Importar Excel
+              </button>
+              <button
+                onClick={openNewProductModal}
+                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-logo-purple to-logo-purple-dark text-white rounded-xl font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+              >
+                <Plus className="w-5 h-5" />
+                Nuevo Producto
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -569,6 +581,16 @@ function ProductosContent() {
           </div>
         </div>
       )}
+
+      {/* Modal de Importación Excel */}
+      <ImportExcelModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onSuccess={() => {
+          loadProducts();
+          setShowImportModal(false);
+        }}
+      />
     </div>
   );
 }

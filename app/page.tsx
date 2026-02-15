@@ -2,7 +2,7 @@ import { Navbar } from '@/components/Navbar';
 import { Hero } from '@/components/Hero';
 import { PhotoSlider } from '@/components/PhotoSlider';
 import { Services } from '@/components/Services';
-import { Catalog } from '@/components/Catalog';
+import { ProductSlider } from '@/components/ProductSlider';
 import { Gallery } from '@/components/Gallery';
 import { Contact } from '@/components/Contact';
 import { Footer } from '@/components/Footer';
@@ -26,8 +26,8 @@ export default function Home() {
       {/* Sección de Servicios */}
       <Services />
 
-      {/* Catálogo de Productos */}
-      <Catalog />
+      {/* Slider de Productos Destacados */}
+      <ProductSlider />
 
       {/* Galería de Trabajos */}
       <Gallery />

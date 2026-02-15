@@ -25,13 +25,12 @@ export function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navLinks = [
-    { href: '#servicios', label: 'Servicios' },
-    { href: '#catalogo', label: 'Catálogo' },
-    { href: '#galeria', label: 'Galería' },
-    { href: '#contacto', label: 'Contacto' },
+   const navLinks = [
+    { href: '/', label: 'Inicio' },
+    { href: '/catalogo', label: 'Catálogo' },
+    { href: '/#galeria', label: 'Galería' },
+    { href: '/#contacto', label: 'Contacto' },
   ];
-
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${

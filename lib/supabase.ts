@@ -14,6 +14,9 @@ export type Product = {
   image: string | null
   description: string | null
   stock: boolean
+  discount_percentage?: number
+  featured?: boolean
+  specifications?: string
   created_at: string
   updated_at: string
 }
