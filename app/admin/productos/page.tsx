@@ -79,7 +79,7 @@ function ProductosContent() {
         .order('display_order');
 
       if (error) throw error;
-      const cats = data?.map((c) => c.name) || [];
+     const cats = data?.map((c: { name: string }) => c.name) || [];
       setCategories(['Todos', ...cats]);
     } catch (error) {
       console.error('Error loading categories:', error);
