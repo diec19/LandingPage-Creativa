@@ -1,17 +1,45 @@
 'use client';
 
-import { MapPin, Phone, Clock, MessageCircle, Mail, Heart, Instagram, Facebook } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { MapPin, Phone, Clock, MessageCircle, Mail, Heart } from 'lucide-react';
 import { WhatsAppButton } from './WhatsAppButton';
-import { InstagramButton } from './InstagramButton'; // ← Falta esto
+import { supabase } from '@/lib/supabase';
 
 /**
  * Componente Contact - Sección de contacto e información de la librería
  * Incluye dirección, teléfono, horarios y botón de WhatsApp
+ * Conectado a Supabase para configuración dinámica
  */
 export function Contact() {
-  const whatsappNumber = '3764895527';
+  const [whatsappNumber, setWhatsappNumber] = useState('3764895527');
+  const [address, setAddress] = useState('Cancharana 5067, Itaembé Guazú');
+
+  useEffect(() => {
+    loadSettings();
+  }, []);
+
+  const loadSettings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('settings')
+        .select('key, value')
+        .in('key', ['whatsapp_number', 'address']);
+
+      if (error) throw error;
+
+      const settingsMap: { [key: string]: string } = {};
+      data?.forEach((setting) => {
+        settingsMap[setting.key] = setting.value;
+      });
+
+      if (settingsMap['whatsapp_number']) setWhatsappNumber(settingsMap['whatsapp_number']);
+      if (settingsMap['address']) setAddress(settingsMap['address']);
+    } catch (error) {
+      console.error('Error loading settings:', error);
+    }
+  };
+
   const whatsappMessage = encodeURIComponent('¡Hola! Quisiera hacer una consulta 😊');
-  const address = 'Cancharana 5067, Itaembé Guazú';
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
 
   return (
@@ -83,27 +111,6 @@ export function Contact() {
                 </div>
               </div>
             </div>
-
-              {/* Instagram / WhatsApp */}
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 hover:bg-white/15 transition-all duration-300 border border-white/20">
-              <div className="flex items-start gap-4">
-                <div className="bg-white/20 p-3 rounded-xl">
-                  <Instagram className="w-6 h-6" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-lg mb-2">Instagram</h3>
-                  <p className="text-turquoise-50 mb-3 text-2xl font-bold">
-                   Enterate de todas las novedades!
-                  </p>
-                  <InstagramButton 
-                    username="ilusioncreativac"
-                    className="inline-flex items-center gap-2 text-sm bg-white text-turquoise-600 px-4 py-2 rounded-full font-medium hover:bg-turquoise-50 transition-all duration-300 hover:scale-105"
-                  >
-                    Seguinos
-                  </InstagramButton>
-                </div>
-              </div>
-            </div>  
 
             {/* Horarios (opcional - modificá según tus horarios) */}
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 hover:bg-white/15 transition-all duration-300 border border-white/20">
