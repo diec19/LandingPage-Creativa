@@ -28,7 +28,7 @@ export function Contact() {
       if (error) throw error;
 
       const settingsMap: { [key: string]: string } = {};
-      data?.forEach((setting) => {
+      data?.forEach((setting: any) => {
         settingsMap[setting.key] = setting.value;
       });
 
