@@ -1,19 +1,18 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, MessageCircle, Tag, Package } from 'lucide-react';
-import { WhatsAppButton } from './WhatsAppButton';
+import { Search, Tag, Package, Eye } from 'lucide-react';
 import { Pagination } from './Pagination';
 import { supabase } from '@/lib/supabase';
 import type { Product, Category } from '@/lib/supabase';
+import Link from 'next/link';
 
 /**
  * Componente Catalog - Catálogo de productos con precios
- * Incluye búsqueda, filtros por categoría, paginación y botón de consulta por WhatsApp
- * Conectado a Supabase para mostrar productos reales
+ * Incluye búsqueda, filtros por categoría, paginación
+ * Click en producto lleva a página de detalle
  */
 export function Catalog() {
-  const [whatsappNumber, setWhatsappNumber] = useState('3764895527');
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<string[]>(['Todos']);
   const [selectedCategory, setSelectedCategory] = useState('Todos');
@@ -25,7 +24,6 @@ export function Catalog() {
   useEffect(() => {
     loadProducts();
     loadCategories();
-    loadSettings();
   }, []);
 
   const loadProducts = async () => {
@@ -59,21 +57,6 @@ export function Catalog() {
     }
   };
 
-  const loadSettings = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('settings')
-        .select('value')
-        .eq('key', 'whatsapp_number')
-        .single();
-
-      if (error) throw error;
-      if (data?.value) setWhatsappNumber(data.value);
-    } catch (error) {
-      console.error('Error loading settings:', error);
-    }
-  };
-
   // Filtrar productos
   const filteredProducts = products.filter((product) => {
     const matchesCategory = selectedCategory === 'Todos' || product.category === selectedCategory;
@@ -92,14 +75,6 @@ export function Catalog() {
     setCurrentPage(1);
   }, [searchTerm, selectedCategory]);
 
-  // Función para generar mensaje de WhatsApp personalizado
-  const generateWhatsAppMessage = (productName: string, productPrice: number) => {
-    return encodeURIComponent(
-      `Hola! Me interesa el producto:\n📦 ${productName}\n💰 Precio: $${productPrice.toLocaleString('es-AR')}\n\n¿Está disponible?`
-    );
-  };
-
-  // Formatear precio en pesos argentinos
   const formatPrice = (price: number) => {
     return `$${price.toLocaleString('es-AR')}`;
   };
@@ -122,7 +97,7 @@ export function Catalog() {
             Nuestros Productos
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Explorá nuestro catálogo y consultá por WhatsApp
+            Explorá nuestro catálogo completo
           </p>
           <div className="mt-4 w-24 h-1 bg-gradient-to-r from-logo-green via-turquoise-400 to-logo-purple mx-auto rounded-full"></div>
         </div>
@@ -191,100 +166,75 @@ export function Catalog() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {currentProducts.map((product, index) => (
-              <div
-                key={product.id}
-                className="group bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border-2 border-gray-100 hover:border-logo-green animate-fade-in-up"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                {/* Imagen del producto */}
-                <div className="relative aspect-square overflow-hidden bg-gray-100">
-                  {product.image ? (
+              <Link key={product.id} href={`/producto/${product.id}`}>
+                <div
+                  className="group bg-white rounded-2xl shadow-md hover:shadow-2xl transition-all duration-300 overflow-hidden border-2 border-gray-100 hover:border-logo-green cursor-pointer"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  {/* Imagen */}
+                  <div className="relative aspect-square overflow-hidden bg-gray-100">
                     <img
-                      src={product.image}
+                      src={product.image || '/placeholder-product.jpg'}
                       alt={product.name}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <Package className="w-16 h-16 text-gray-300" />
+                    
+                    {/* Badge de OFERTA */}
+                    {product.discount_percentage && product.discount_percentage > 0 && (
+                      <div className="absolute top-3 right-3 bg-red-600 text-white text-sm font-bold px-3 py-1 rounded-full animate-pulse">
+                        -{product.discount_percentage}%
+                      </div>
+                    )}
+
+                    {/* Badge de categoría */}
+                    <div className="absolute top-3 left-3 px-3 py-1 bg-logo-purple text-white text-xs font-bold rounded-full">
+                      {product.category}
                     </div>
-                  )}
-                  
-                  {/* Badge de OFERTA */}
-                  {product.discount_percentage && product.discount_percentage > 0 && (
-                    <div className="absolute top-3 right-3 bg-red-600 text-white text-sm font-bold px-3 py-1 rounded-full shadow-lg animate-pulse z-10">
-                      -{product.discount_percentage}% OFF
+
+                    {/* Overlay hover */}
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                      <div className="text-white text-center">
+                        <Eye className="w-8 h-8 mx-auto mb-2" />
+                        <p className="font-semibold">Ver Detalles</p>
+                      </div>
                     </div>
-                  )}
-                  
-                  {/* Badge de stock */}
-                  {product.stock ? (
-                    <div className="absolute top-3 left-3 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                      Disponible
-                    </div>
-                  ) : (
-                    <div className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                      Sin Stock
-                    </div>
-                  )}
-                  {/* Badge de categoría */}
-                  <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur-sm text-logo-purple text-xs font-medium px-3 py-1 rounded-full flex items-center gap-1">
-                    <Tag className="w-3 h-3" />
-                    {product.category}
                   </div>
-                </div>
 
-                {/* Información del producto */}
-                <div className="p-4">
-                  {/* Nombre */}
-                  <h3 className="font-bold text-lg text-gray-800 mb-2 line-clamp-2 min-h-[3.5rem]">
-                    {product.name}
-                  </h3>
+                  {/* Info */}
+                  <div className="p-4">
+                    <h3 className="font-bold text-lg text-gray-800 mb-2 line-clamp-2 min-h-[3.5rem]">
+                      {product.name}
+                    </h3>
 
-                  {/* Descripción */}
-                  <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                    {product.description || 'Sin descripción'}
-                  </p>
+                    <p className="text-sm text-gray-600 mb-3 line-clamp-1">
+                      {product.description || 'Ver más detalles'}
+                    </p>
 
-                  {/* Precio */}
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <p className="text-xs text-gray-500 mb-1">Precio</p>
-                      {product.discount_percentage && product.discount_percentage > 0 ? (
-                        <div>
-                          <p className="text-sm text-gray-400 line-through">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-gray-500">Precio</p>
+                        {product.discount_percentage && product.discount_percentage > 0 ? (
+                          <div>
+                            <p className="text-sm text-gray-400 line-through">
+                              {formatPrice(product.price)}
+                            </p>
+                            <p className="text-2xl font-bold text-red-600">
+                              {formatPrice(calculateDiscount(product.price, product.discount_percentage))}
+                            </p>
+                          </div>
+                        ) : (
+                          <p className="text-2xl font-bold text-logo-purple">
                             {formatPrice(product.price)}
                           </p>
-                          <p className="text-2xl font-bold text-red-600">
-                            {formatPrice(calculateDiscount(product.price, product.discount_percentage))}
-                          </p>
-                          <p className="text-xs text-green-600 font-medium">
-                            Ahorrás {formatPrice(product.price - calculateDiscount(product.price, product.discount_percentage))}
-                          </p>
-                        </div>
-                      ) : (
-                        <p className="text-2xl font-bold text-logo-purple">
-                          {formatPrice(product.price)}
-                        </p>
-                      )}
+                        )}
+                      </div>
+                      <div className="px-3 py-1 bg-logo-green/10 text-logo-green text-xs font-bold rounded-full">
+                        Ver más
+                      </div>
                     </div>
                   </div>
-
-                  {/* Botón de consulta por WhatsApp */}
-                  <WhatsAppButton
-                    phoneNumber={whatsappNumber}
-                    message={generateWhatsAppMessage(product.name, product.price)}
-                    className={`w-full font-semibold py-3 rounded-full hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2 group/btn ${
-                      product.stock
-                        ? 'bg-gradient-to-r from-logo-green to-logo-green-dark text-white'
-                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    }`}
-                  >
-                    <MessageCircle className="w-4 h-4 group-hover/btn:animate-bounce" />
-                    {product.stock ? 'Consultar por WhatsApp' : 'Sin Stock'}
-                  </WhatsAppButton>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}
@@ -299,24 +249,6 @@ export function Catalog() {
             className="mt-12"
           />
         )}
-
-        {/* CTA final */}
-        <div className="mt-16 text-center bg-gradient-to-r from-logo-green/10 via-turquoise-50 to-logo-purple/10 rounded-3xl p-8">
-          <h3 className="text-2xl font-bold text-gray-800 mb-3">
-            ¿No encontraste lo que buscás?
-          </h3>
-          <p className="text-gray-600 mb-6">
-            Consultanos directamente y te ayudamos a encontrar el producto perfecto
-          </p>
-          <WhatsAppButton
-            phoneNumber={whatsappNumber}
-            message={encodeURIComponent('Hola! Estoy buscando un producto que no vi en el catálogo. ¿Me pueden ayudar?')}
-            className="inline-flex items-center gap-2 px-8 py-4 bg-logo-purple text-white rounded-full font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
-          >
-            <MessageCircle className="w-5 h-5" />
-            Contactar por WhatsApp
-          </WhatsAppButton>
-        </div>
       </div>
     </section>
   );

@@ -2,81 +2,90 @@
 
 import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Circle } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
+import type { Product } from '@/lib/supabase';
+import Link from 'next/link';
 
 /**
- * Componente PhotoSlider - Slider automático de fotos
+ * Componente PhotoSlider - Slider automático con productos desde Supabase
  * Incluye navegación manual, indicadores y autoplay
  */
 export function PhotoSlider() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Array de slides
-  // IMPORTANTE: Reemplazá estas URLs con tus fotos reales
-  const slides = [
-    {
-      id: 1,
-      image: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=1200&q=80',
-      title: 'Todo para empezar el año escolar',
-      subtitle: 'Útiles de calidad al mejor precio',
-    },
-    {
-      id: 2,
-      image: 'https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=1200&q=80',
-      title: 'Personalizamos tus artículos',
-      subtitle: 'Diseños únicos hechos especialmente para vos',
-    },
-    {
-      id: 3,
-      image: 'https://images.unsplash.com/photo-1517842645767-c639042777db?w=1200&q=80',
-      title: 'Variedad en artículos escolares',
-      subtitle: 'Encontrá todo lo que necesitás en un solo lugar',
-    },
-    {
-      id: 4,
-      image: 'https://images.unsplash.com/photo-1523289333742-be1143f6b766?w=1200&q=80',
-      title: 'Arte y creatividad',
-      subtitle: 'Materiales para dar vida a tus ideas',
-    },
-  ];
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  const loadProducts = async () => {
+    try {
+      // Obtener productos destacados con imágenes
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('stock', true)
+        .not('image', 'is', null)
+        .order('featured', { ascending: false })
+        .order('created_at', { ascending: false })
+        .limit(6);
+
+      if (error) throw error;
+      setProducts(data || []);
+    } catch (error) {
+      console.error('Error loading products:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Autoplay del slider
   useEffect(() => {
-    if (!isAutoPlaying) return;
+    if (!isAutoPlaying || products.length === 0) return;
 
     const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
+      setCurrentSlide((prev) => (prev + 1) % products.length);
     }, 5000); // Cambia cada 5 segundos
 
     return () => clearInterval(interval);
-  }, [isAutoPlaying, slides.length]);
+  }, [isAutoPlaying, products.length]);
 
   const goToSlide = (index: number) => {
     setCurrentSlide(index);
-    setIsAutoPlaying(false); // Pausar autoplay cuando el usuario navega manualmente
-    setTimeout(() => setIsAutoPlaying(true), 10000); // Reanudar después de 10 segundos
+    setIsAutoPlaying(false);
+    setTimeout(() => setIsAutoPlaying(true), 10000);
   };
 
   const goToPrevious = () => {
-    const newIndex = currentSlide === 0 ? slides.length - 1 : currentSlide - 1;
+    const newIndex = currentSlide === 0 ? products.length - 1 : currentSlide - 1;
     goToSlide(newIndex);
   };
 
   const goToNext = () => {
-    const newIndex = (currentSlide + 1) % slides.length;
+    const newIndex = (currentSlide + 1) % products.length;
     goToSlide(newIndex);
   };
+
+  const formatPrice = (price: number) => {
+    return `$${price.toLocaleString('es-AR')}`;
+  };
+
+  if (loading || products.length === 0) {
+    return null; // No mostrar nada si no hay productos
+  }
 
   return (
     <section className="relative py-12 px-4 bg-white overflow-hidden">
       <div className="max-w-7xl mx-auto">
-        {/* Encabezado opcional */}
+        {/* Encabezado */}
         <div className="text-center mb-8 animate-fade-in-up">
           <h2 className="text-3xl sm:text-4xl font-bold text-turquoise-600 mb-2">
-            Conocé nuestro local
+            Productos Destacados
           </h2>
           <p className="text-gray-600">
-            Un vistazo a nuestros productos y trabajos
+            Conocé algunos de nuestros mejores productos
           </p>
         </div>
 
@@ -84,10 +93,11 @@ export function PhotoSlider() {
         <div className="relative rounded-3xl overflow-hidden shadow-2xl group">
           {/* Slides */}
           <div className="relative h-[300px] sm:h-[400px] lg:h-[500px]">
-            {slides.map((slide, index) => (
-              <div
-                key={slide.id}
-                className={`absolute inset-0 transition-all duration-700 ease-in-out ${
+            {products.map((product, index) => (
+              <Link
+                key={product.id}
+                href={`/producto/${product.id}`}
+                className={`absolute inset-0 transition-all duration-700 ease-in-out cursor-pointer ${
                   index === currentSlide
                     ? 'opacity-100 scale-100'
                     : 'opacity-0 scale-105'
@@ -95,33 +105,71 @@ export function PhotoSlider() {
               >
                 {/* Imagen de fondo */}
                 <img
-                  src={slide.image}
-                  alt={slide.title}
+                  src={product.image || '/placeholder-product.jpg'}
+                  alt={product.name}
                   className="w-full h-full object-cover"
                 />
 
                 {/* Overlay con gradiente */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
 
+                {/* Badge de oferta */}
+                {product.discount_percentage && product.discount_percentage > 0 && (
+                  <div className="absolute top-6 right-6 bg-red-600 text-white text-lg font-bold px-4 py-2 rounded-full shadow-lg animate-pulse">
+                    -{product.discount_percentage}% OFF
+                  </div>
+                )}
+
+                {/* Badge de categoría */}
+                <div className="absolute top-6 left-6 bg-logo-purple text-white text-sm font-bold px-4 py-2 rounded-full">
+                  {product.category}
+                </div>
+
                 {/* Contenido del slide */}
                 <div className="absolute bottom-0 left-0 right-0 p-8 sm:p-12 text-white">
                   <div className="max-w-3xl">
                     <h3 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-3 animate-fade-in-up">
-                      {slide.title}
+                      {product.name}
                     </h3>
-                    <p className="text-lg sm:text-xl text-white/90 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-                      {slide.subtitle}
-                    </p>
+                    {product.description && (
+                      <p className="text-lg sm:text-xl text-white/90 mb-4 animate-fade-in-up line-clamp-2" style={{ animationDelay: '0.1s' }}>
+                        {product.description}
+                      </p>
+                    )}
+                    <div className="flex items-center gap-4 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+                      {product.discount_percentage && product.discount_percentage > 0 ? (
+                        <>
+                          <span className="text-2xl sm:text-3xl font-bold line-through text-white/60">
+                            {formatPrice(product.price)}
+                          </span>
+                          <span className="text-3xl sm:text-4xl font-bold text-green-400">
+                            {formatPrice(product.price - (product.price * product.discount_percentage / 100))}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-3xl sm:text-4xl font-bold">
+                          {formatPrice(product.price)}
+                        </span>
+                      )}
+                    </div>
+                    <div className="mt-4">
+                      <span className="inline-block px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-medium">
+                        Click para ver detalles →
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
 
           {/* Botón anterior */}
           <button
-            onClick={goToPrevious}
-            className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-full text-white transition-all duration-300 opacity-0 group-hover:opacity-100 hover:scale-110"
+            onClick={(e) => {
+              e.preventDefault();
+              goToPrevious();
+            }}
+            className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-full text-white transition-all duration-300 opacity-0 group-hover:opacity-100 hover:scale-110 z-10"
             aria-label="Anterior"
           >
             <ChevronLeft className="w-6 h-6" />
@@ -129,19 +177,25 @@ export function PhotoSlider() {
 
           {/* Botón siguiente */}
           <button
-            onClick={goToNext}
-            className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-full text-white transition-all duration-300 opacity-0 group-hover:opacity-100 hover:scale-110"
+            onClick={(e) => {
+              e.preventDefault();
+              goToNext();
+            }}
+            className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-full text-white transition-all duration-300 opacity-0 group-hover:opacity-100 hover:scale-110 z-10"
             aria-label="Siguiente"
           >
             <ChevronRight className="w-6 h-6" />
           </button>
 
           {/* Indicadores (dots) */}
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
-            {slides.map((_, index) => (
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+            {products.map((_, index) => (
               <button
                 key={index}
-                onClick={() => goToSlide(index)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  goToSlide(index);
+                }}
                 className={`transition-all duration-300 ${
                   index === currentSlide
                     ? 'w-8 h-3 bg-white rounded-full'
@@ -154,7 +208,7 @@ export function PhotoSlider() {
 
           {/* Contador de slides */}
           <div className="absolute top-4 right-4 px-3 py-1 bg-black/40 backdrop-blur-sm rounded-full text-white text-sm font-medium">
-            {currentSlide + 1} / {slides.length}
+            {currentSlide + 1} / {products.length}
           </div>
         </div>
 
@@ -173,11 +227,12 @@ export function PhotoSlider() {
           </button>
         </div>
 
-        {/* Miniaturas debajo del slider (opcional) */}
-        <div className="hidden lg:grid grid-cols-4 gap-4 mt-8">
-          {slides.map((slide, index) => (
-            <button
-              key={slide.id}
+        {/* Miniaturas debajo del slider */}
+        <div className="hidden lg:grid grid-cols-6 gap-4 mt-8">
+          {products.map((product, index) => (
+            <Link
+              key={product.id}
+              href={`/producto/${product.id}`}
               onClick={() => goToSlide(index)}
               className={`relative overflow-hidden rounded-2xl transition-all duration-300 group/thumb ${
                 index === currentSlide
@@ -185,19 +240,24 @@ export function PhotoSlider() {
                   : 'opacity-60 hover:opacity-100'
               }`}
             >
-              <div className="aspect-video">
+              <div className="aspect-square">
                 <img
-                  src={slide.image}
-                  alt={slide.title}
+                  src={product.image || '/placeholder-product.jpg'}
+                  alt={product.name}
                   className="w-full h-full object-cover group-hover/thumb:scale-110 transition-transform duration-300"
                 />
               </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-3">
-                <p className="text-white text-sm font-medium truncate">
-                  {slide.title}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-2">
+                <p className="text-white text-xs font-medium truncate">
+                  {product.name}
                 </p>
               </div>
-            </button>
+              {product.discount_percentage && product.discount_percentage > 0 && (
+                <div className="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full">
+                  -{product.discount_percentage}%
+                </div>
+              )}
+            </Link>
           ))}
         </div>
       </div>
