@@ -3,12 +3,13 @@
 import { useState, useEffect } from 'react';
 import { Search, MessageCircle, Tag, Package } from 'lucide-react';
 import { WhatsAppButton } from './WhatsAppButton';
+import { Pagination } from './Pagination';
 import { supabase } from '@/lib/supabase';
 import type { Product, Category } from '@/lib/supabase';
 
 /**
  * Componente Catalog - Catálogo de productos con precios
- * Incluye búsqueda, filtros por categoría y botón de consulta por WhatsApp
+ * Incluye búsqueda, filtros por categoría, paginación y botón de consulta por WhatsApp
  * Conectado a Supabase para mostrar productos reales
  */
 export function Catalog() {
@@ -18,6 +19,8 @@ export function Catalog() {
   const [selectedCategory, setSelectedCategory] = useState('Todos');
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
 
   useEffect(() => {
     loadProducts();
@@ -79,6 +82,16 @@ export function Catalog() {
     return matchesCategory && matchesSearch;
   });
 
+  // Calcular productos de la página actual
+  const indexOfLastProduct = currentPage * itemsPerPage;
+  const indexOfFirstProduct = indexOfLastProduct - itemsPerPage;
+  const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
+
+  // Resetear a página 1 al cambiar búsqueda o filtro
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedCategory]);
+
   // Función para generar mensaje de WhatsApp personalizado
   const generateWhatsAppMessage = (productName: string, productPrice: number) => {
     return encodeURIComponent(
@@ -89,6 +102,10 @@ export function Catalog() {
   // Formatear precio en pesos argentinos
   const formatPrice = (price: number) => {
     return `$${price.toLocaleString('es-AR')}`;
+  };
+
+  const calculateDiscount = (price: number, discount: number) => {
+    return price - (price * discount / 100);
   };
 
   return (
@@ -173,7 +190,7 @@ export function Catalog() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredProducts.map((product, index) => (
+            {currentProducts.map((product, index) => (
               <div
                 key={product.id}
                 className="group bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border-2 border-gray-100 hover:border-logo-green animate-fade-in-up"
@@ -192,13 +209,21 @@ export function Catalog() {
                       <Package className="w-16 h-16 text-gray-300" />
                     </div>
                   )}
+                  
+                  {/* Badge de OFERTA */}
+                  {product.discount_percentage && product.discount_percentage > 0 && (
+                    <div className="absolute top-3 right-3 bg-red-600 text-white text-sm font-bold px-3 py-1 rounded-full shadow-lg animate-pulse z-10">
+                      -{product.discount_percentage}% OFF
+                    </div>
+                  )}
+                  
                   {/* Badge de stock */}
                   {product.stock ? (
-                    <div className="absolute top-3 right-3 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                    <div className="absolute top-3 left-3 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">
                       Disponible
                     </div>
                   ) : (
-                    <div className="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                    <div className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
                       Sin Stock
                     </div>
                   )}
@@ -225,9 +250,23 @@ export function Catalog() {
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <p className="text-xs text-gray-500 mb-1">Precio</p>
-                      <p className="text-2xl font-bold text-logo-purple">
-                        {formatPrice(product.price)}
-                      </p>
+                      {product.discount_percentage && product.discount_percentage > 0 ? (
+                        <div>
+                          <p className="text-sm text-gray-400 line-through">
+                            {formatPrice(product.price)}
+                          </p>
+                          <p className="text-2xl font-bold text-red-600">
+                            {formatPrice(calculateDiscount(product.price, product.discount_percentage))}
+                          </p>
+                          <p className="text-xs text-green-600 font-medium">
+                            Ahorrás {formatPrice(product.price - calculateDiscount(product.price, product.discount_percentage))}
+                          </p>
+                        </div>
+                      ) : (
+                        <p className="text-2xl font-bold text-logo-purple">
+                          {formatPrice(product.price)}
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -238,7 +277,7 @@ export function Catalog() {
                     className={`w-full font-semibold py-3 rounded-full hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2 group/btn ${
                       product.stock
                         ? 'bg-gradient-to-r from-logo-green to-logo-green-dark text-white'
-                        : 'bg-gray-300 text-gray-500 cursor-not-allowed pointer-events-none'
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     }`}
                   >
                     <MessageCircle className="w-4 h-4 group-hover/btn:animate-bounce" />
@@ -248,6 +287,17 @@ export function Catalog() {
               </div>
             ))}
           </div>
+        )}
+
+        {/* Paginación */}
+        {!loading && filteredProducts.length > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalItems={filteredProducts.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+            className="mt-12"
+          />
         )}
 
         {/* CTA final */}

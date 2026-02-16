@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import type { Product } from '@/lib/supabase';
 import { ProtectedRoute } from '@/components/admin/ProtectedRoute';
 import { ImportExcelModal } from '@/components/admin/ImportExcelModal';
+import { Pagination } from '@/components/Pagination';
 import {
   Package,
   Plus,
@@ -25,7 +26,7 @@ import { useRouter } from 'next/navigation';
 
 /**
  * Página de Gestión de Productos
- * CRUD completo con subida de imágenes e importación masiva desde Excel
+ * CRUD completo con subida de imágenes, importación masiva y paginación
  */
 function ProductosContent() {
   const router = useRouter();
@@ -38,6 +39,8 @@ function ProductosContent() {
   const [showImportModal, setShowImportModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 9;
 
   // Form state
   const [formData, setFormData] = useState({
@@ -47,6 +50,7 @@ function ProductosContent() {
     description: '',
     stock: true,
     image: '',
+    discount_percentage: 0,
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
@@ -82,7 +86,7 @@ function ProductosContent() {
         .order('display_order');
 
       if (error) throw error;
-     const cats = data?.map((c: { name: string }) => c.name) || [];
+      const cats = data?.map((c: any) => c.name) || [];
       setCategories(['Todos', ...cats]);
     } catch (error) {
       console.error('Error loading categories:', error);
@@ -169,6 +173,7 @@ function ProductosContent() {
       description: product.description || '',
       stock: product.stock,
       image: product.image || '',
+      discount_percentage: product.discount_percentage || 0,
     });
     setImagePreview(product.image || '');
     setShowModal(true);
@@ -197,6 +202,7 @@ function ProductosContent() {
       description: '',
       stock: true,
       image: '',
+      discount_percentage: 0,
     });
     setImageFile(null);
     setImagePreview('');
@@ -218,6 +224,16 @@ function ProductosContent() {
       filterCategory === 'Todos' || product.category === filterCategory;
     return matchesSearch && matchesCategory;
   });
+
+  // Calcular productos de la página actual
+  const indexOfLastProduct = currentPage * itemsPerPage;
+  const indexOfFirstProduct = indexOfLastProduct - itemsPerPage;
+  const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
+
+  // Resetear a página 1 al cambiar búsqueda o filtro
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterCategory]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -314,7 +330,7 @@ function ProductosContent() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProducts.map((product) => (
+            {currentProducts.map((product) => (
               <div
                 key={product.id}
                 className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border-2 border-gray-100"
@@ -384,6 +400,17 @@ function ProductosContent() {
               </div>
             ))}
           </div>
+        )}
+
+        {/* Paginación */}
+        {!loading && filteredProducts.length > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalItems={filteredProducts.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+            className="mt-8"
+          />
         )}
       </main>
 
@@ -508,6 +535,38 @@ function ProductosContent() {
                     Producto disponible en stock
                   </span>
                 </label>
+              </div>
+
+              {/* Descuento/Oferta */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Descuento (% OFF) - Opcional
+                </label>
+                <div className="flex items-center gap-4">
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={formData.discount_percentage}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        discount_percentage: parseInt(e.target.value) || 0,
+                      })
+                    }
+                    className="w-32 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-500 focus:outline-none transition-colors duration-300"
+                    placeholder="0"
+                  />
+                  <span className="text-gray-600">% de descuento</span>
+                  {formData.discount_percentage > 0 && (
+                    <span className="px-3 py-1 bg-red-100 text-red-600 text-sm font-bold rounded-full">
+                      🔥 EN OFERTA
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  Los productos con descuento aparecen en el slider de ofertas de la home
+                </p>
               </div>
 
               {/* Imagen */}

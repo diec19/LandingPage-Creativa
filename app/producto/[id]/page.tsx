@@ -111,6 +111,10 @@ export default function ProductoPage() {
     return `$${price.toLocaleString('es-AR')}`;
   };
 
+  const calculateDiscount = (price: number, discount: number) => {
+    return price - (price * discount / 100);
+  };
+
   const generateWhatsAppMessage = () => {
     if (!product) return '';
     return encodeURIComponent(
@@ -259,6 +263,16 @@ export default function ProductoPage() {
               <span className="text-sm font-medium text-logo-purple">{product.category}</span>
             </div>
 
+            {/* Badge de OFERTA si aplica */}
+            {product.discount_percentage && product.discount_percentage > 0 && (
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-100 border-2 border-red-600 rounded-full">
+                <span className="text-2xl">🔥</span>
+                <span className="text-red-600 font-bold text-lg">
+                  ¡{product.discount_percentage}% OFF!
+                </span>
+              </div>
+            )}
+
             {/* Título */}
             <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">{product.name}</h1>
 
@@ -280,7 +294,23 @@ export default function ProductoPage() {
             {/* Precio */}
             <div className="bg-white rounded-2xl p-6 shadow-md border-2 border-gray-100">
               <p className="text-sm text-gray-600 mb-2">Precio</p>
-              <p className="text-5xl font-bold text-logo-purple">{formatPrice(product.price)}</p>
+              {product.discount_percentage && product.discount_percentage > 0 ? (
+                <div>
+                  <p className="text-2xl text-gray-400 line-through mb-1">
+                    {formatPrice(product.price)}
+                  </p>
+                  <p className="text-5xl font-bold text-red-600 mb-2">
+                    {formatPrice(calculateDiscount(product.price, product.discount_percentage))}
+                  </p>
+                  <div className="flex items-center gap-2 text-green-600">
+                    <span className="text-lg font-semibold">
+                      ¡Ahorrás {formatPrice(product.price - calculateDiscount(product.price, product.discount_percentage))}!
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-5xl font-bold text-logo-purple">{formatPrice(product.price)}</p>
+              )}
             </div>
 
             {/* Descripción */}
